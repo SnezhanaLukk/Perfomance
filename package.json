@@ -1,0 +1,44 @@
+{
+  "name": "shri2025-task",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "## Задание Оптимизировать страницу, выложить результат на Github-Pages и отправить его на проверку на [https://shri-performance.ru/](https://shri-performance.ru/), отправив адрес вашей страницы. Нужно набрать минимум **80 баллов**. Набрать больше баллов возможно, но больше 120 в зачёт не пойдёт.",
+  "main": "webpack.config.js",
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1",
+    "webpack-merge": "^6.0.1",
+    "webpack-sources": "^3.3.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production",
+    "start": "webpack serve --mode development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SnezhanaLukk/Perfomance.git"
+  },
+  "author": "snlk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SnezhanaLukk/Perfomance/issues"
+  },
+  "homepage": "https://github.com/SnezhanaLukk/Perfomance#readme",
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
+    "autoprefixer": "^10.4.21",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.3",
+    "postcss-loader": "^8.1.1",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  }
+}
