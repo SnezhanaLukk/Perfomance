@@ -1,6 +1,5 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const autoprefixer = require("autoprefixer");
 
 module.exports = {
   entry: "./src/index.js",
@@ -8,6 +7,7 @@ module.exports = {
     filename: "bundle.[contenthash].js",
     path: path.resolve(__dirname, "dist"),
     publicPath: "/",
+    clean: true,
   },
   module: {
     rules: [
@@ -25,21 +25,22 @@ module.exports = {
         },
       },
       {
-        test: /\.css$/,
+        test: /\.css$/i,
         use: [
           "style-loader",
-          "css-loader",
           {
-            loader: "postcss-loader",
+            loader: "css-loader",
             options: {
-              postcssOptions: {
-                plugins: [autoprefixer],
-              },
+              importLoaders: 1,
             },
           },
+          "postcss-loader",
         ],
       },
     ],
+  },
+  resolve: {
+    extensions: [".js", ".jsx"],
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -48,12 +49,9 @@ module.exports = {
       inject: "body",
     }),
   ],
-  resolve: {
-    extensions: [".js", ".jsx"],
-  },
   devServer: {
     static: {
-      directory: path.join(__dirname, "dist"),
+      directory: path.join(__dirname, "public"),
     },
     compress: true,
     port: 3000,
@@ -61,17 +59,4 @@ module.exports = {
     historyApiFallback: true,
   },
   mode: "development",
-  optimization: {
-    minimize: false,
-    splitChunks: {
-      chunks: "all",
-    },
-  },
 };
-// export const mode = "production";
-// export const optimization = {
-//   minimize: true,
-//   splitChunks: {
-//     chunks: "all",
-//   },
-// };
