@@ -1,41 +1,61 @@
-import { useState, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import Event from "./Event.jsx";
 import { TABS, TABS_KEYS } from "./tabs";
 
 export default function MainMenu() {
-  const ref = useRef();
+  const wrapperRef = useRef();
   const initedRef = useRef(false);
   const [activeTab, setActiveTab] = useState("");
   const [hasRightScroll, setHasRightScroll] = useState(false);
 
   useEffect(() => {
-    if (!activeTab && !initedRef.current) {
+    if (!initedRef.current) {
       initedRef.current = true;
       setActiveTab(new URLSearchParams(location.search).get("tab") || "all");
     }
-  });
-
-  const onSelectInput = (event) => {
-    setActiveTab(event.target.value);
-  };
-
-  let sizes = [];
-  const onSize = (size) => {
-    sizes = [...sizes, size];
-  };
+  }, []);
 
   useEffect(() => {
-    const sumWidth = sizes.reduce((acc, item) => acc + item.width, 0);
-    // const sumHeight = sizes.reduce((acc, item) => acc + item.height, 0);
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
 
-    const newHasRightScroll = sumWidth > ref.current.offsetWidth;
-    if (newHasRightScroll !== hasRightScroll) {
-      setHasRightScroll(newHasRightScroll);
-    }
-  });
+    const panel = wrapper.querySelector(
+      ".section__panel:not(.section__panel_hidden)"
+    );
+    if (!panel) return;
 
-  const onArrowCLick = () => {
-    const scroller = ref.current.querySelector(
+    const checkScroll = () => {
+      const panelList = panel.querySelector(".section__panel-list");
+      if (!panelList) return;
+
+      const panelListWidth = panelList.scrollWidth;
+      const wrapperWidth = wrapper.offsetWidth;
+
+      setHasRightScroll(panelListWidth > wrapperWidth);
+    };
+
+    checkScroll();
+
+    const resizeObserver = new ResizeObserver(checkScroll);
+    resizeObserver.observe(panel);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [activeTab]);
+
+  const onSelectInput = useCallback((event) => {
+    setActiveTab(event.target.value);
+  }, []);
+
+  const onArrowClick = useCallback(() => {
+    const scroller = wrapperRef.current.querySelector(
       ".section__panel:not(.section__panel_hidden)"
     );
     if (scroller) {
@@ -44,7 +64,63 @@ export default function MainMenu() {
         behavior: "smooth",
       });
     }
-  };
+  }, []);
+
+  const tabOptions = useMemo(
+    () =>
+      TABS_KEYS.map((key) => (
+        <option key={key} value={key}>
+          {TABS[key].title}
+        </option>
+      )),
+    []
+  );
+
+  const tabList = useMemo(
+    () =>
+      TABS_KEYS.map((key) => (
+        <li
+          key={key}
+          role="tab"
+          aria-selected={key === activeTab ? "true" : "false"}
+          tabIndex={key === activeTab ? "0" : undefined}
+          className={
+            "section__tab" + (key === activeTab ? " section__tab_active" : "")
+          }
+          id={`tab_${key}`}
+          aria-controls={`panel_${key}`}
+          onClick={() => setActiveTab(key)}
+        >
+          {TABS[key].title}
+        </li>
+      )),
+    [activeTab]
+  );
+
+  const tabPanels = useMemo(
+    () =>
+      TABS_KEYS.map((key) => (
+        <div
+          key={key}
+          role="tabpanel"
+          className={
+            "section__panel" +
+            (key === activeTab ? "" : " section__panel_hidden")
+          }
+          aria-hidden={key === activeTab ? "false" : "true"}
+          id={`panel_${key}`}
+          aria-labelledby={`tab_${key}`}
+        >
+          <ul className="section__panel-list">
+            {TABS[key].items.map((item, index) => (
+              <Event key={item.id || index} {...item} />
+            ))}
+          </ul>
+        </div>
+      )),
+    [activeTab]
+  );
+
   return (
     <main className="main">
       <section className="section main__general">
@@ -61,15 +137,13 @@ export default function MainMenu() {
               <li className="hero-dashboard__item">
                 <div className="hero-dashboard__item-title">Дома</div>
                 <div className="hero-dashboard__item-details">
-                  +23
-                  <span className="a11y-hidden">°</span>
+                  +23<span className="a11y-hidden">°</span>
                 </div>
               </li>
               <li className="hero-dashboard__item">
                 <div className="hero-dashboard__item-title">За окном</div>
                 <div className="hero-dashboard__item-details">
-                  +19
-                  <span className="a11y-hidden">°</span>
+                  +19<span className="a11y-hidden">°</span>
                   <div
                     className="hero-dashboard__icon hero-dashboard__icon_rain"
                     role="img"
@@ -109,32 +183,27 @@ export default function MainMenu() {
 
         <ul className="event-grid">
           <Event
-            slim={true}
+            slim
             icon="light2"
             iconLabel="Освещение"
             title="Выключить весь свет в доме и во дворе"
           />
+          <Event slim icon="schedule" iconLabel="Расписание" title="Я ухожу" />
           <Event
-            slim={true}
-            icon="schedule"
-            iconLabel="Расписание"
-            title="Я ухожу"
-          />
-          <Event
-            slim={true}
+            slim
             icon="light2"
             iconLabel="Освещение"
             title="Включить свет в коридоре"
           />
           <Event
-            slim={true}
+            slim
             icon="temp2"
             iconLabel="Температура"
             title="Набрать горячую ванну"
             subtitle="Начнётся в 18:00"
           />
           <Event
-            slim={true}
+            slim
             icon="temp2"
             iconLabel="Температура"
             title="Сделать пол тёплым во всей квартире"
@@ -149,58 +218,20 @@ export default function MainMenu() {
           <select
             className="section__select"
             defaultValue="all"
-            onInput={onSelectInput}
+            onChange={onSelectInput}
           >
-            {TABS_KEYS.map((key) => (
-              <option key={key} value={key}>
-                {TABS[key].title}
-              </option>
-            ))}
+            {tabOptions}
           </select>
 
           <ul role="tablist" className="section__tabs">
-            {TABS_KEYS.map((key) => (
-              <li
-                key={key}
-                role="tab"
-                aria-selected={key === activeTab ? "true" : "false"}
-                tabIndex={key === activeTab ? "0" : undefined}
-                className={
-                  "section__tab" +
-                  (key === activeTab ? " section__tab_active" : "")
-                }
-                id={`tab_${key}`}
-                aria-controls={`panel_${key}`}
-                onClick={() => setActiveTab(key)}
-              >
-                {TABS[key].title}
-              </li>
-            ))}
+            {tabList}
           </ul>
         </div>
 
-        <div className="section__panel-wrapper" ref={ref}>
-          {TABS_KEYS.map((key) => (
-            <div
-              key={key}
-              role="tabpanel"
-              className={
-                "section__panel" +
-                (key === activeTab ? "" : " section__panel_hidden")
-              }
-              aria-hidden={key === activeTab ? "false" : "true"}
-              id={`panel_${key}`}
-              aria-labelledby={`tab_${key}`}
-            >
-              <ul className="section__panel-list">
-                {TABS[key].items.map((item, index) => (
-                  <Event key={index} {...item} onSize={onSize} />
-                ))}
-              </ul>
-            </div>
-          ))}
+        <div className="section__panel-wrapper" ref={wrapperRef}>
+          {tabPanels}
           {hasRightScroll && (
-            <div className="section__arrow" onClick={onArrowCLick}></div>
+            <div className="section__arrow" onClick={onArrowClick}></div>
           )}
         </div>
       </section>

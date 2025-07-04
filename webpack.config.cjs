@@ -6,7 +6,7 @@ module.exports = {
   output: {
     filename: "bundle.[contenthash].js",
     path: path.resolve(__dirname, "dist"),
-    publicPath: "/",
+    publicPath: "/Perfomance/",
     clean: true,
   },
   module: {
@@ -47,6 +47,7 @@ module.exports = {
       template: "./public/index.html",
       filename: "index.html",
       inject: "body",
+      favicon: false,
     }),
   ],
   devServer: {
@@ -58,5 +59,5 @@ module.exports = {
     hot: true,
     historyApiFallback: true,
   },
-  mode: "development",
+  mode: "production",
 };
